@@ -1,98 +1,101 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import {Button, Pressable, StyleSheet, Text, View} from 'react-native';
+import Login from './Components/Login';
+import {Provider} from 'react-redux';
+import {store} from './store/store';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+  createDrawerNavigator,
+  DrawerContentScrollView,
+} from '@react-navigation/drawer'; // Import createDrawerNavigator
+import {enableScreens} from 'react-native-screens';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useEffect, useState} from 'react';
+import Account from './Components/Account';
+import Product from './Components/Product';
+import DrawerContent from './Components/DrawerContent';
+import CustomButton from './Components/CustomButton';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+enableScreens();
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [loggedIn, setLoggedIn] = useState(false);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  useEffect(() => {
+    const loadCredentials = async () => {
+      try {
+        const savedUsername = await AsyncStorage.getItem('username');
+        const savedPassword = await AsyncStorage.getItem('password');
+        if (savedPassword && savedUsername) setLoggedIn(true);
+      } catch (error) {
+        console.log('Failed to load credentials', error);
+      }
+    };
+    loadCredentials();
+  }, []);
+
+  const Stack = createStackNavigator();
+  const Drawer = createDrawerNavigator(); // Create a Drawer navigator
+
+  const CustomHeader = ({navigation}) => {
+    const handleLogout = async () => {
+      await AsyncStorage.setItem('username', '');
+      await AsyncStorage.setItem('password', '');
+      navigation.navigate('Login');
+      setLoggedIn(false);
+    };
+
+    return (
+      <DrawerContentScrollView>
+        <View style={styles.drawerContent}>
+          <View style={styles.drawerHeader}>
+            <Text style={styles.drawerHeaderText}>My Drawer</Text>
+          </View>
+          <View style={styles.drawerBody}>
+            <CustomButton onPress={handleLogout}>Logout</CustomButton>
+          </View>
+        </View>
+      </DrawerContentScrollView>
+    );
   };
 
+  function Navigation({navigation}) {
+    return (
+      <NavigationContainer>
+        <Drawer.Navigator drawerContent={props => <CustomHeader {...props} />}>
+          <Drawer.Screen
+            options={{
+              headerShown: false,
+            }}
+            name="MainStack"
+            component={MainStack}
+          />
+        </Drawer.Navigator>
+      </NavigationContainer>
+    );
+  }
+
+  function MainStack({navigation}) {
+    return (
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          headerStyle: {backgroundColor: '#BAB8B6'},
+          headerTintColor: 'black',
+          contentStyle: {backgroundColor: '#BAB8B6'},
+          // headerRight: () => <CustomHeader navigation={navigation} />, // Pass navigation prop
+        }}>
+        <Stack.Screen name="Login" component={Login} />
+        {!loggedIn && <Stack.Screen name="Account" component={Account} />}
+        <Stack.Screen name="Product" component={Product} />
+      </Stack.Navigator>
+    );
+  }
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <Provider store={store}>
+      <Navigation />
+    </Provider>
   );
 }
 
@@ -112,6 +115,34 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+  textContainer: {
+    paddingRight: 10,
+  },
+  pressed: {
+    opacity: 0.75,
+  },
+  textStyle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  drawerContent: {
+    flex: 1,
+  },
+  drawerHeader: {
+    padding: 20,
+    backgroundColor: '#f0f0f0',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  drawerHeaderText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  drawerBody: {
+    paddingVertical: 20,
+    paddingHorizontal: 10,
   },
 });
 
