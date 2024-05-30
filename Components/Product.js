@@ -8,8 +8,8 @@ import {
   Image,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import IconSelector, {ICON_TYPE} from './IconSelect';
 import {Spinner} from './Spinner';
 
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: 10,
-    color:black
+    color: black,
   },
   container: {
     flex: 1,

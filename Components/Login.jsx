@@ -50,7 +50,6 @@ function Login({navigation}) {
               textAlign: 'left',
               top: '10%',
               marginLeft: 16.5,
-              fontFamily: 'Raleway-Black',
             }}>{`Find your
 Gadget`}</Text>
         </View>

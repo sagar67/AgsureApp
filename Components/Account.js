@@ -20,6 +20,7 @@ const gray = '#959595';
 const Account = ({navigation}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const name = useSelector(state => state.user.username);
   const pass = useSelector(state => state.user.password);
@@ -35,21 +36,15 @@ const Account = ({navigation}) => {
   }
 
   const submitHandler = async () => {
-    // if (isNaN(username)) {
-    //   return Alert.alert(
-    //     'Invalid Username',
-    //     "Username should be a 'digit' less than 10",
-    //   );
-    // }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(username.trim())) {
-      return Alert.alert(
-        'Invalid Username',
-        'Username must be 3 to 16 characters long and can only contain letters, numbers, underscores, and hyphens.',
-      );
+      return Alert.alert('Invalid Email', 'Enter correct email address');
     }
     if (password.trim().length < 6) {
-      return Alert.alert('Invalid Password', 'Password should be more than 6');
+      return Alert.alert(
+        'Invalid Password',
+        'Password should be more than 6 characters',
+      );
     }
     try {
       await AsyncStorage.setItem('username', username);
@@ -57,8 +52,6 @@ const Account = ({navigation}) => {
     } catch (error) {
       console.log('Failed to save credentials', error);
     }
-    // setUsername('');
-    // setPassword('');
     navigation.navigate('Product');
     dispatch(usernameActions.username(username, password));
   };
@@ -105,9 +98,9 @@ back`}</Text>
             onChangeText={passwordHandler}
             placeholderTextColor={black}
             placeholder="*********"
-            secureTextEntry
+            secureTextEntry={!showPassword}
           />
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <Text style={styles.showText}>Show</Text>
           </TouchableOpacity>
         </View>
@@ -204,7 +197,7 @@ const styles = StyleSheet.create({
   createAccountText: {
     color: '#6857ff',
     textAlign: 'center',
-    fontSize:15
+    fontSize: 15,
   },
 });
 
